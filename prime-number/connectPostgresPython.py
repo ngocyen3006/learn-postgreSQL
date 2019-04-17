@@ -1,6 +1,5 @@
 # !/usr/bin/python
 import psycopg2
-from math import sqrt, floor
 
 hostname = 'localhost'
 username = 'yen'
@@ -9,19 +8,21 @@ database = 'prime'
 
 
 def isPrime(n):
-    if type(n).__name__ != 'int':
+    '''
+    Don't test type(n) or n == 2 or n == 3. Because insertData() function is import it.
+    '''
+
+    if n % 2 == 0 or n % 3 == 0:
         return False
 
-    if n < 2:
-        return False
-
-    if n == 2 or n == 3:
-        return True
-
-    upper_bound = floor(sqrt(n))
-    for i in range(2, upper_bound + 1):
+    i = 5
+    w = 2
+    while i * i <= n:
         if n % i == 0:
             return False
+
+        i += w
+        w = 6 - w
 
     return True
 
@@ -53,20 +54,20 @@ def createPrimeTable():
 
 
 def readLastData():
-    selectQuery = 'SELECT * from PrimeNumber;'
+    selectQuery = 'SELECT * from PrimeNumber order by id desc;'
 
     connect = connectDB()
     conn = connect[0]
     cur = connect[1]
 
     cur.execute(selectQuery)
-    rows = cur.fetchall()
-    if rows == []:
+    rows = cur.fetchone()
+    if rows == None:
         id = 0
         lastPrimeNumber = 0
     else:
-        id = rows[-1][0]
-        lastPrimeNumber = rows[-1][1]
+        id = rows[0]
+        lastPrimeNumber = rows[1]
 
     conn.close()
     cur.close()
@@ -82,9 +83,18 @@ def insertData():
     connect = connectDB()
     conn = connect[0]
     cur = connect[1]
-
     if id < 1000000:
-        for val in range(lastPrime + 1, 15485863 + 1):
+        if lastPrime < 3:
+            if lastPrime == 0:
+                cur.executemany(insertQuery, [(2,), (3,)])
+                conn.commit()
+            else:
+                cur.execute(insertQuery, (3,))
+                conn.commit()
+
+            lastPrime = 3
+
+        for val in range(lastPrime + 2, 15485863 + 1, 2):
             if isPrime(val):
                 cur.execute(insertQuery, (val,))
                 conn.commit()
@@ -99,5 +109,5 @@ def insertData():
 if __name__ == '__main__':
     # createPrimeTable()
     print(readLastData())
-    # insertData()
+    insertData()
     print(readLastData())
