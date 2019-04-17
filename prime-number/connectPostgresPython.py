@@ -61,8 +61,12 @@ def readLastData():
 
     cur.execute(selectQuery)
     rows = cur.fetchall()
-    id = rows[-1][0]
-    lastPrimeNumber = rows[-1][1]
+    if rows == []:
+        id = 0
+        lastPrimeNumber = 0
+    else:
+        id = rows[-1][0]
+        lastPrimeNumber = rows[-1][1]
 
     conn.close()
     cur.close()
@@ -93,6 +97,7 @@ def insertData():
 
 
 if __name__ == '__main__':
+    # createPrimeTable()
     print(readLastData())
-    insertData()
+    # insertData()
     print(readLastData())
