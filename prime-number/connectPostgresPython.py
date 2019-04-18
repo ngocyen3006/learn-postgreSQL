@@ -7,26 +7,6 @@ password = ' '
 database = 'prime'
 
 
-def isPrime(n):
-    '''
-    Don't test type(n) or n == 2 or n == 3. Because insertData() function is import it.
-    '''
-
-    if n % 2 == 0 or n % 3 == 0:
-        return False
-
-    i = 5
-    w = 2
-    while i * i <= n:
-        if n % i == 0:
-            return False
-
-        i += w
-        w = 6 - w
-
-    return True
-
-
 def connectDB():
     try:
         conn = psycopg2.connect(host=hostname, database=database, user=username, password=password)
@@ -74,6 +54,48 @@ def readLastData():
     return [id, lastPrimeNumber]
 
 
+def readDataByID(id):
+    selectQuery = 'SELECT * from PrimeNumber where id= %s;'
+
+    connect = connectDB()
+    conn = connect[0]
+    cur = connect[1]
+
+    cur.execute(selectQuery, (id,))
+    rows = cur.fetchone()
+    if rows == None:
+        id = 0
+        lastPrimeNumber = 0
+    else:
+        id = rows[0]
+        lastPrimeNumber = rows[1]
+
+    conn.close()
+    cur.close()
+    return [id, lastPrimeNumber]
+
+
+def readData():
+    selectQuery = 'SELECT prime from PrimeNumber;'
+
+    connect = connectDB()
+    conn = connect[0]
+    cur = connect[1]
+
+    cur.execute(selectQuery)
+    rows = cur.fetchall()
+
+    primeNumber = []
+    if rows == None or rows == []:
+        primeNumber = []
+    for row in rows:
+        primeNumber.append(row[0])
+
+    conn.close()
+    cur.close()
+    return primeNumber
+
+
 def insertData():
     insertQuery = 'INSERT INTO PrimeNumber (prime) VALUES (%s);'
     lastData = readLastData()
@@ -94,20 +116,14 @@ def insertData():
 
             lastPrime = 3
 
+        primeNumberList = readData()
         for val in range(lastPrime + 2, 15485863 + 1, 2):
-            if isPrime(val):
+            prime = all([val % p != 0 for p in primeNumberList])
+
+            if prime == True:
                 cur.execute(insertQuery, (val,))
                 conn.commit()
-
-            else:
-                continue
+                primeNumberList.append(val)
 
     conn.close()
     cur.close()
-
-
-if __name__ == '__main__':
-    # createPrimeTable()
-    print(readLastData())
-    insertData()
-    print(readLastData())
