@@ -1,4 +1,4 @@
-from connectPostgresPython import isPrime
+from isPrime import isPrime
 from pprint import pprint
 
 
@@ -17,5 +17,9 @@ def read_file_text():
 if __name__ == '__main__':
     data = read_file_text()
     pprint(data)
+    try:
+        print(data.index(False))
+    except Exception as e:
+        print(e)
     print("------")
     print(all(data))
