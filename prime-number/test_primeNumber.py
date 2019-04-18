@@ -1,5 +1,5 @@
 import unittest
-from connectPostgresPython import isPrime
+from isPrime import isPrime
 
 
 class TestPrimeNumber(unittest.TestCase):
